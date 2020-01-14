@@ -9,6 +9,7 @@ import (
 	"github.com/iovisor/kubectl-trace/pkg/meta"
 	batchv1 "k8s.io/api/batch/v1"
 	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -184,7 +185,7 @@ func (t *TraceJobClient) DeleteJobs(nf TraceJobFilter) error {
 	return nil
 }
 
-func (t *TraceJobClient) CreateJob(nj TraceJob) (*batchv1.Job, error) {
+func (t *TraceJobClient) CreateJob(nj TraceJob) (*batchv1.Job, *corev1.ConfigMap) {
 
 	bpfTraceCmd := []string{
 		"/bin/timeout",
@@ -451,10 +452,7 @@ func (t *TraceJobClient) CreateJob(nj TraceJob) (*batchv1.Job, error) {
 				ReadOnly:  true,
 			})
 	}
-	if _, err := t.ConfigClient.Create(cm); err != nil {
-		return nil, err
-	}
-	return t.JobClient.Create(job)
+	return job, cm
 }
 
 func int32Ptr(i int32) *int32 { return &i }

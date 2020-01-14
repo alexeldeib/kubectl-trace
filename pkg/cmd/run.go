@@ -11,7 +11,7 @@ import (
 	"github.com/iovisor/kubectl-trace/pkg/signals"
 	"github.com/iovisor/kubectl-trace/pkg/tracejob"
 	"github.com/spf13/cobra"
-	"k8s.io/api/core/v1"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/uuid"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -316,8 +316,11 @@ func (o *RunOptions) Run() error {
 		DeadlineGracePeriod: o.deadlineGracePeriod,
 	}
 
-	job, err := tc.CreateJob(tj)
-	if err != nil {
+	job, cm := tc.CreateJob(tj)
+	if _, err := tc.ConfigClient.Create(cm); err != nil {
+		return err
+	}
+	if _, err := tc.JobClient.Create(job); err != nil {
 		return err
 	}
 
